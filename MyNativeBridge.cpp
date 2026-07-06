@@ -46,17 +46,17 @@ int sendd(int client_fd, char *buf, int ssize, int flags)
 {
     int ret = 0;
     int size = 0;
-    ret=ssize-size;
-    while (  ret>0)
+    ret = ssize - size;
+    while (ret > 0)
     {
-        ret = write(client_fd, buf, ssize-size);
+        ret = write(client_fd, buf, ssize - size);
         if (ret < 0)
         {
             return -1;
         }
         buf += ret;
         size += ret;
-        ret=ssize-size;
+        ret = ssize - size;
     }
     return size;
 }
@@ -66,7 +66,7 @@ void *client_thread(void *arg)
     int clientfd[666];
     client_arr = clientfd;
     int server_fd = *(int *)arg;
-        printf("启动客户端线程 %d\n", server_fd);
+    printf("启动客户端线程 %d\n", server_fd);
     struct sockaddr_in address;
     int addrlen = sizeof(address);
     int client_fd = 0;
@@ -114,7 +114,7 @@ void *codec_output_thread(void *arg)
     start_buf = start;
 
     printf("C++ 纯原生 TCP 发送线程启动。\n");
-   // int ok = 0;
+    // int ok = 0;
     while (ctx->is_running)
     {
         buf_idx = AMediaCodec_dequeueOutputBuffer(ctx->codec, &info, -1);
@@ -175,27 +175,27 @@ void *codec_output_thread(void *arg)
             size_t sps_size = 0, pps_size = 0;
             uint8_t *sps_buf = nullptr;
             uint8_t *pps_buf = nullptr;
-            char *p=start;
-            start_buf_size=0;
+            char *p = start;
+            start_buf_size = 0;
             // 从 format 中提取 csd-0 (SPS) 和 csd-1 (PPS)
             if (AMediaFormat_getBuffer(format, "csd-0", (void **)&sps_buf, &sps_size) && sps_buf)
             {
                 // 优先把 SPS 发送给电脑端
-                //send(ctx->client_fd, sps_buf, sps_size, 0);
+                // send(ctx->client_fd, sps_buf, sps_size, 0);
                 memcpy(p, sps_buf, sps_size);
-                p+=sps_size;
-                start_buf_size+=sps_size;
+                p += sps_size;
+                start_buf_size += sps_size;
                 printf("成功保存  SPS 配置帧，大小: %zu", sps_size);
             }
 
             if (AMediaFormat_getBuffer(format, "csd-1", (void **)&pps_buf, &pps_size) && pps_buf)
             {
                 // 接着把 PPS 发送给电脑端
-                //send(ctx->client_fd, pps_buf, pps_size, 0);
+                // send(ctx->client_fd, pps_buf, pps_size, 0);
                 memcpy(p, pps_buf, pps_size);
-                p+=pps_size;
-                start_buf_size+=pps_size;
-                printf("成功保存 PPS 配置帧，大小: %zu,%d\n", pps_size,start_buf_size);
+                p += pps_size;
+                start_buf_size += pps_size;
+                printf("成功保存 PPS 配置帧，大小: %zu,%d\n", pps_size, start_buf_size);
             }
             AMediaFormat_delete(format);
         }
@@ -219,7 +219,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     g_ctx.server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (g_ctx.server_fd < 0)
         return nullptr;
-        printf("开始线程 %d\n", g_ctx.server_fd);
+    printf("开始线程 %d\n", g_ctx.server_fd);
 
     int opt = 1;
     setsockopt(g_ctx.server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -231,7 +231,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
 
     if (bind(g_ctx.server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
     {
-        fprintf(stderr,"绑定失败\n");
+        fprintf(stderr, "绑定失败\n");
         close(g_ctx.server_fd);
         return nullptr;
     }
@@ -259,7 +259,8 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 3);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_COLOR_FORMAT, 2130708361); // COLOR_FormatSurface
-
+    AMediaFormat_setInt32(format, "profile", 8); // H.264 Baseline Profile
+    AMediaFormat_setInt32(format, "level", 65536); // H.264 Level 3.1
     media_status_t status = AMediaCodec_configure(g_ctx.codec, format, nullptr, nullptr, AMEDIACODEC_CONFIGURE_FLAG_ENCODE);
     AMediaFormat_delete(format);
 
