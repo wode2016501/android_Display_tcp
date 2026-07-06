@@ -1,0 +1,3 @@
+/home/wode/tmp/my_scrcpy_project/build/CMakeFiles/my_scrcpy_codec.dir
+/home/wode/tmp/my_scrcpy_project/build/CMakeFiles/edit_cache.dir
+/home/wode/tmp/my_scrcpy_project/build/CMakeFiles/rebuild_cache.dir
