@@ -130,7 +130,7 @@ public class MyNativeBridge {
         MyNativeBridge bridge = new MyNativeBridge();
         try {
             // 一键启动：内部会直接调用 C 语言在 6666 端口进行 TCP 监听
-            bridge.startMirroring(1920, 1080, 20000000, 6666);
+            bridge.startMirroring(1920, 1080, 8000000, 6666);
             System.out.println("[Java] 服务已完美跑在 C++ 传输层，输入 Ctrl+C 退出进程。");
 
             // 保持 Java 守护进程存活

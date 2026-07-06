@@ -15,11 +15,13 @@
 #define TAG "scrcpy_c_networking"
 // #define printf(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 // #define fprintf(stderr,...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+#define MAX_CLIENT_COUNT 666
 
 int *client_arr = 0;
 int client_count = 0;
 char *start_buf = 0;
-int start_buf_size = 0;
+int Width = 0;
+int Height = 0;
 struct CodecContext
 {
     AMediaCodec *codec = nullptr;
@@ -63,7 +65,7 @@ int sendd(int client_fd, char *buf, int ssize, int flags)
 
 void *client_thread(void *arg)
 {
-    int clientfd[666];
+    int clientfd[MAX_CLIENT_COUNT];
     client_arr = clientfd;
     int server_fd = *(int *)arg;
     printf("启动客户端线程 %d\n", server_fd);
@@ -71,17 +73,22 @@ void *client_thread(void *arg)
     int addrlen = sizeof(address);
     int client_fd = 0;
     int ret = 0;
+    char buf[255];
+    int *py=0;
+    
     while (1)
     {
         client_fd = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+        py=(int *)start_buf;
+        printf("====%dx%d size: %d \n",py[0],py[1],py[2]);
         if (client_fd < 0)
         {
             printf("客户端连接失败\n");
             continue;
         }
-
-        ret = sendd(client_fd, start_buf, start_buf_size, 0);
-        if (ret != start_buf_size)
+        //ret=read(client_fd, buf, 255);
+        ret = sendd(client_fd, start_buf, py[2]+4+4+4, 0);
+        if (ret != py[2]+4+4+4)
         {
             printf("发送失败\n");
             close(client_fd);
@@ -112,7 +119,9 @@ void *codec_output_thread(void *arg)
     uint8_t *buf = 0;
 
     start_buf = start;
-
+    ssize_t sent = 0;
+    uint8_t *nalu_data = 0;
+    int size = 0;
     printf("C++ 纯原生 TCP 发送线程启动。\n");
     // int ok = 0;
     while (ctx->is_running)
@@ -146,14 +155,25 @@ void *codec_output_thread(void *arg)
                 {
                     perror("错误 select()");
                 }
-                uint8_t *nalu_data = buf + info.offset;
+                nalu_data = buf + info.offset;
+                size = info.size;
 
                 // 【彻底使用 C 语言原生发送】：绕过 JVM，无多余内存消耗
                 for (int i = 0; i < client_count; i++)
                 {
                     if (FD_ISSET(client_arr[i], &wd_set))
                     {
-                        ssize_t sent = sendd(client_arr[i], (char *)nalu_data, info.size, 0);
+                        sent = sendd(client_arr[i], (char *)&size, sizeof(int), 0);
+                        if (sent != sizeof(int))
+                        {
+                            fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败。\n", client_arr[i]);
+                            close(client_arr[i]);
+                            memcpy(client_arr + i, client_arr + i + 1, sizeof(int) * (client_count - i - 1));
+                            client_count--;
+                            i--;
+                            continue;
+                        }
+                        sent = sendd(client_arr[i], (char *)nalu_data, info.size, 0);
                         if (sent != info.size)
                         {
                             fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败。\n", client_arr[i]);
@@ -161,6 +181,7 @@ void *codec_output_thread(void *arg)
                             memcpy(client_arr + i, client_arr + i + 1, sizeof(int) * (client_count - i - 1));
                             client_count--;
                             i--;
+                            continue;
                         }
                     }
                 }
@@ -176,7 +197,12 @@ void *codec_output_thread(void *arg)
             uint8_t *sps_buf = nullptr;
             uint8_t *pps_buf = nullptr;
             char *p = start;
-            start_buf_size = 0;
+            memcpy(p, &Width, 4);
+            p += 4;
+            memcpy(p, &Height, 4);
+            p += 4;
+            int start_buf_size = 8 + 4;
+            p+= 4;
             // 从 format 中提取 csd-0 (SPS) 和 csd-1 (PPS)
             if (AMediaFormat_getBuffer(format, "csd-0", (void **)&sps_buf, &sps_size) && sps_buf)
             {
@@ -197,6 +223,7 @@ void *codec_output_thread(void *arg)
                 start_buf_size += pps_size;
                 printf("成功保存 PPS 配置帧，大小: %zu,%d\n", pps_size, start_buf_size);
             }
+            memcpy(start + 8 , &start_buf_size, 4);
             AMediaFormat_delete(format);
         }
     }
@@ -215,6 +242,8 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
 {
 
     printf("bitrate: %d %dx%d\n", bitrate, width, height);
+    Width = width;
+    Height = height;
     // 1. 创建、绑定、监听 TCP Socket (保持不变)
     g_ctx.server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (g_ctx.server_fd < 0)
@@ -259,8 +288,8 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 3);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_COLOR_FORMAT, 2130708361); // COLOR_FormatSurface
-    AMediaFormat_setInt32(format, "profile", 8); // H.264 Baseline Profile
-    AMediaFormat_setInt32(format, "level", 65536); // H.264 Level 3.1
+    AMediaFormat_setInt32(format, "profile", 8);                              // H.264 Baseline Profile
+    AMediaFormat_setInt32(format, "level", 65536);                            // H.264 Level 3.1
     media_status_t status = AMediaCodec_configure(g_ctx.codec, format, nullptr, nullptr, AMEDIACODEC_CONFIGURE_FLAG_ENCODE);
     AMediaFormat_delete(format);
 
