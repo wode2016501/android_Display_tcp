@@ -13,3 +13,5 @@ jar cvf my_server.jar classes.dex
 cd -
 adb push build/libmy_scrcpy_codec.so out/my_server.jar /data/local/tmp/ 
 
+adb shell  LD_LIBRARY_PATH=/data/local/tmp CLASSPATH=/data/local/tmp/my_server.jar app_process /data/local/tmp com.my.scrcpy.binding.MyNativeBridge
+
