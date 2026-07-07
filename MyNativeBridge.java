@@ -34,7 +34,7 @@ public class MyNativeBridge {
         mySurface = initNativeServerAndEncoder(width, height, bitrate);
 
         if (mySurface == null) {
-            throw new IOException("C 层服务器启动或硬件编码器 InputSurface 创建失败！");
+            throw new IOException("C 硬件编码器 InputSurface 创建失败！");
         }
 
         System.out.println("C 层 Surface 创建成功，正在通过隐藏 API 绑定虚拟屏幕...");
@@ -135,7 +135,7 @@ public class MyNativeBridge {
         try {
             while (true) {
             // 一键启动：内部会直接调用 C 语言在 6666 端口进行 TCP 监听
-            bridge.startMirroring(1920, 1080, 8000000,6666);
+            bridge.startMirroring(1920, 1080, 8000000,9999);
             System.out.println("[Java] 服务已完美跑在 C++ 传输层，输入 Ctrl+C 退出进程。");
 
             // 保持 Java 守护进程存活
