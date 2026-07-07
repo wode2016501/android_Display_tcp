@@ -135,7 +135,7 @@ void *codec_output_thread(void *arg)
         if (buf_idx >= 0)
         {
             buf = AMediaCodec_getOutputBuffer(ctx->codec, buf_idx, &out_size);
-            if (buf && info.size > 0 && client_count > 0&&client_status!=0)
+            if (buf && info.size > 0&&client_status!=0)
             {
                 FD_ZERO(&wd_set);
                 maxfd = 0;
