@@ -12,7 +12,9 @@ public class MyNativeBridge {
     }
 
     // JNI 声明：让 C 语言在 6666 端口启动监听，并准备好编码器
-    private native Surface initNativeServerAndEncoder(int width, int height, int bitrate, int port);
+    private native Surface initNativeServerAndEncoder(int width, int height, int bitrate);
+
+    private native int setNativeServerAndEncoder(int port);
 
     private native void startNativeServerAndEncoder();
 
@@ -24,10 +26,12 @@ public class MyNativeBridge {
 
     public void startMirroring(int width, int height, int bitrate, int port) throws IOException {
         stopMirroring();
-
+        if(setNativeServerAndEncoder(port)<1){
+            throw new IOException("C 层服务器启动失败！");
+        };
         // 1. 【调用 C++】：让 C++ 去创建带 BufferQueue 的高品质 Surface
         // 这一步在电脑端连接 6666 端口之前依然会阻塞
-        mySurface = initNativeServerAndEncoder(width, height, bitrate, port);
+        mySurface = initNativeServerAndEncoder(width, height, bitrate);
 
         if (mySurface == null) {
             throw new IOException("C 层服务器启动或硬件编码器 InputSurface 创建失败！");
@@ -129,20 +133,22 @@ public class MyNativeBridge {
         System.out.println("[Java] 本地 C 架构投屏服务启动...");
         MyNativeBridge bridge = new MyNativeBridge();
         try {
+            while (true) {
             // 一键启动：内部会直接调用 C 语言在 6666 端口进行 TCP 监听
-            bridge.startMirroring(1920, 1080, 8000000, 6666);
+            bridge.startMirroring(1920, 1080, 8000000,6666);
             System.out.println("[Java] 服务已完美跑在 C++ 传输层，输入 Ctrl+C 退出进程。");
 
             // 保持 Java 守护进程存活
-          //  while (true) {
-            //    Thread.sleep(5000);
-           // }
-           bridge.stopMirroring();
+            // while (true) {
+            // Thread.sleep(5000);
+            // }
+            bridge.stopMirroring();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-          //  bridge.stopMirroring();
+            // bridge.stopMirroring();
         }
     }
 }
