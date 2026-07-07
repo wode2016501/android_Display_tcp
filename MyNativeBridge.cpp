@@ -18,7 +18,7 @@
 #define MAX_CLIENT_COUNT 666
 int *client_arr = 0;
 int client_count = 0;
-int client_status=0;
+int client_status = 0;
 char *start_buf = 0;
 int start_buf_size = 0;
 int Width = 0;
@@ -87,7 +87,7 @@ void *client_thread(void *arg)
             continue;
         }
         client_arr[client_count++] = client_fd;
-        while (start_buf_size == 0 )
+        while (start_buf_size == 0)
         {
             sleep(1);
         }
@@ -101,7 +101,7 @@ void *client_thread(void *arg)
             client_count--;
             continue;
         }
-        client_status=1;
+        client_status = 1;
         printf("客户端连接成功 %d count=%d\n", client_fd, client_count);
     }
 
@@ -128,14 +128,14 @@ void *codec_output_thread(void *arg)
     uint8_t *nalu_data = 0;
     int size = 0;
     printf("C++ 纯原生 TCP 发送线程启动。\n");
-    while (client_count >0)
+    while (client_count > 0)
     {
         buf_idx = AMediaCodec_dequeueOutputBuffer(ctx->codec, &info, -1);
 
         if (buf_idx >= 0)
         {
             buf = AMediaCodec_getOutputBuffer(ctx->codec, buf_idx, &out_size);
-            if (buf && info.size > 0&&client_status!=0)
+            if (buf && info.size > 0 && client_status != 0)
             {
                 FD_ZERO(&wd_set);
                 maxfd = 0;
@@ -200,7 +200,7 @@ void *codec_output_thread(void *arg)
             p += 4;
             int buf_size = 8 + 4;
             p += 4;
-            
+
             // 从 format 中提取 csd-0 (SPS) 和 csd-1 (PPS)
             if (AMediaFormat_getBuffer(format, "csd-0", (void **)&sps_buf, &sps_size) && sps_buf)
             {
@@ -221,14 +221,17 @@ void *codec_output_thread(void *arg)
                 buf_size += pps_size;
                 printf("成功保存 PPS 配置帧，大小: %zu,%d\n", pps_size, buf_size);
             }
-             pps_size+=sps_size;
-            memcpy(start + 8, & pps_size, 4);
+            pps_size += sps_size;
+            memcpy(start + 8, &pps_size, 4);
             start_buf_size = buf_size;
             AMediaFormat_delete(format);
         }
     }
-    client_status=0;
+    client_status = 0;
     start_buf_size = 0;
+    AMediaCodec_stop(g_ctx.codec);
+    AMediaCodec_delete(g_ctx.codec);
+    g_ctx.codec = nullptr;
     printf("C++ 纯原生 TCP 发送线程已安全关闭。\n");
     return nullptr;
 }
@@ -282,7 +285,7 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     JNIEnv *env, jobject thiz, jint width, jint height, jint bitrate)
 {
-        if (g_ctx.server_fd < 0)
+    if (g_ctx.server_fd < 0)
     {
         return nullptr;
     }
@@ -329,7 +332,6 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
         printf("C 层 AMediaCodec_createInputSurface 失败\n");
         AMediaCodec_delete(g_ctx.codec);
 
-
         return nullptr;
     }
 
@@ -339,7 +341,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     {
         ANativeWindow_release(g_ctx.window);
         AMediaCodec_delete(g_ctx.codec);
-        
+
         return nullptr;
     }
 
