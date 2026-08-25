@@ -53,7 +53,7 @@ int sendd(int client_fd, char *buf, int ssize, int flags)
     while (ret > 0)
     {
         ret = write(client_fd, buf, ssize - size);
-        if (ret < 0)
+        if (ret < 1)
         {
             return -1;
         }
@@ -103,6 +103,11 @@ void *client_thread(void *arg)
         }
         client_status = 1;
         printf("客户端连接成功 %d count=%d\n", client_fd, client_count);
+        // 1. 设置发送超时 (例如 1 秒)
+        struct timeval timeout;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+        setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
     }
 
     return nullptr;
