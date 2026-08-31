@@ -316,6 +316,8 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, height);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_BIT_RATE, bitrate);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);
+    //max-fps
+  //  AMediaFormat_setFloat(format, "max-fps-to-encoder", 60.0f); 
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 3);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_COLOR_FORMAT, 2130708361); // COLOR_FormatSurface
     AMediaFormat_setInt32(format, "profile", 8);                              // H.264 Baseline Profile
