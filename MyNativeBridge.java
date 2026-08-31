@@ -128,14 +128,18 @@ public class MyNativeBridge {
         method.invoke(null, displayToken);
     }
 
-    // 独立可执行入口
+    // 独立可执行入口   
     public static void main(String[] args) {
+        int width=args.length>0?Integer.parseInt(args[0]):1920;
+        int height=args.length>1?Integer.parseInt(args[1]):1080;
+        int bitrate=args.length>2?Integer.parseInt(args[2]):8000000;
+        int port=args.length>3?Integer.parseInt(args[3]):9999;
         System.out.println("[Java] 本地 C 架构投屏服务启动...");
         MyNativeBridge bridge = new MyNativeBridge();
         try {
             while (true) {
             // 一键启动：内部会直接调用 C 语言在 6666 端口进行 TCP 监听
-            bridge.startMirroring(1920, 1080, 8000000,9999);
+            bridge.startMirroring(width, height, bitrate, port);
             System.out.println("[Java] 服务已完美跑在 C++ 传输层，输入 Ctrl+C 退出进程。");
 
             // 保持 Java 守护进程存活
