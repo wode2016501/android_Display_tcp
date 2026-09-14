@@ -302,6 +302,8 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     printf("bitrate: %d %dx%d\n", bitrate, width, height);
     Width = width;
     Height = height;
+ 
+
 
     // 2. 率先创建 H.264 编码组件
     g_ctx.codec = AMediaCodec_createEncoderByType("video/avc");
@@ -312,13 +314,13 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
 
     AMediaFormat *format = AMediaFormat_new();
     AMediaFormat_setString(format, AMEDIAFORMAT_KEY_MIME, "video/avc");
-    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_WIDTH, width);
-    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, height);
+    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_WIDTH, Width);
+    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, Height);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_BIT_RATE, bitrate);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);
     //max-fps
   //  AMediaFormat_setFloat(format, "max-fps-to-encoder", 60.0f); 
-    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 3);
+    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1); // 关键：I 帧间隔为 1 秒
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_COLOR_FORMAT, 2130708361); // COLOR_FormatSurface
     AMediaFormat_setInt32(format, "profile", 8);                              // H.264 Baseline Profile
     AMediaFormat_setInt32(format, "level", 65536);                            // H.264 Level 3.1
@@ -328,6 +330,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     if (status != AMEDIA_OK)
     {
         AMediaCodec_delete(g_ctx.codec);
+        fprintf(stderr, "AMediaCodec_configure 失败\n");
         return nullptr;
     }
 
@@ -336,7 +339,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     status = AMediaCodec_createInputSurface(g_ctx.codec, &g_ctx.window);
     if (status != AMEDIA_OK || !g_ctx.window)
     {
-        printf("C 层 AMediaCodec_createInputSurface 失败\n");
+        fprintf(stderr, "C 层 AMediaCodec_createInputSurface 失败\n");
         AMediaCodec_delete(g_ctx.codec);
 
         return nullptr;
@@ -348,7 +351,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     {
         ANativeWindow_release(g_ctx.window);
         AMediaCodec_delete(g_ctx.codec);
-
+        fprintf(stderr, "AMediaCodec_start 失败\n");
         return nullptr;
     }
 

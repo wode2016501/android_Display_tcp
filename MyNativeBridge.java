@@ -24,7 +24,7 @@ public class MyNativeBridge {
     private IBinder displayToken;
     private Surface mySurface;
 
-    public void startMirroring(int width, int height, int bitrate, int port) throws IOException {
+    public void startMirroring(int width, int height, int bitrate, int port,int  displayid ) throws IOException {
         stopMirroring();
         if(setNativeServerAndEncoder(port)<1){
             throw new IOException("C 层服务器启动失败！");
@@ -41,13 +41,13 @@ public class MyNativeBridge {
 
         // 2. 绑定系统虚拟显示器到这个从 C++ 递过来的 mySurface 上
         try {
-            displayToken = reflectCreateDisplay("my_display", false);
+            displayToken = reflectCreateDisplay("my_display",  true);
             reflectOpenTransaction();
             try {
                 reflectSetDisplaySurface(displayToken, mySurface);
                 Rect displayRect = new Rect(0, 0, width, height);
                 reflectSetDisplayProjection(displayToken, 0, displayRect, displayRect);
-                reflectSetDisplayLayerStack(displayToken, 0);
+                reflectSetDisplayLayerStack(displayToken, displayid);
             } finally {
                 reflectCloseTransaction();
             }
@@ -132,14 +132,15 @@ public class MyNativeBridge {
     public static void main(String[] args) {
         int width=args.length>0?Integer.parseInt(args[0]):1920;
         int height=args.length>1?Integer.parseInt(args[1]):1080;
-        int bitrate=args.length>2?Integer.parseInt(args[2]):8000000;
+        int bitrate=args.length>2?Integer.parseInt(args[2]):12000000;
         int port=args.length>3?Integer.parseInt(args[3]):9999;
+        int displayid=args.length>4?Integer.parseInt(args[4]):0;
         System.out.println("[Java] 本地 C 架构投屏服务启动...");
         MyNativeBridge bridge = new MyNativeBridge();
         try {
             while (true) {
             // 一键启动：内部会直接调用 C 语言在 6666 端口进行 TCP 监听
-            bridge.startMirroring(width, height, bitrate, port);
+            bridge.startMirroring(width, height, bitrate, port,displayid);
             System.out.println("[Java] 服务已完美跑在 C++ 传输层，输入 Ctrl+C 退出进程。");
 
             // 保持 Java 守护进程存活
