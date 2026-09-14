@@ -86,6 +86,11 @@ void *client_thread(void *arg)
             printf("客户端连接失败\n");
             continue;
         }
+        if (address.sin_addr.s_addr == htonl(INADDR_LOOPBACK))
+        {
+            close(client_fd);
+            continue;
+        }
         client_arr[client_count++] = client_fd;
         while (start_buf_size == 0)
         {
@@ -302,8 +307,6 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     printf("bitrate: %d %dx%d\n", bitrate, width, height);
     Width = width;
     Height = height;
- 
-
 
     // 2. 率先创建 H.264 编码组件
     g_ctx.codec = AMediaCodec_createEncoderByType("video/avc");
@@ -318,9 +321,9 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, Height);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_BIT_RATE, bitrate);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);
-    //max-fps
-  //  AMediaFormat_setFloat(format, "max-fps-to-encoder", 60.0f); 
-    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1); // 关键：I 帧间隔为 1 秒
+    // max-fps
+    //  AMediaFormat_setFloat(format, "max-fps-to-encoder", 60.0f);
+    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1);      // 关键：I 帧间隔为 1 秒
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_COLOR_FORMAT, 2130708361); // COLOR_FormatSurface
     AMediaFormat_setInt32(format, "profile", 8);                              // H.264 Baseline Profile
     AMediaFormat_setInt32(format, "level", 65536);                            // H.264 Level 3.1
