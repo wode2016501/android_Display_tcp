@@ -88,6 +88,7 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android/asm/swab.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/asm-generic/swab.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/linux/ipv6.h \
+  /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/arpa/inet.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/unistd.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/sys/select.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/linux/time.h \

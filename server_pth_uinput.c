@@ -454,14 +454,15 @@ int main(int argc, char **argv)
 		tinfo1.SCREEN_HEIGHT = atoi(argv[2]);
 	}
 	int client_fd;
-	struct sockaddr_in server_addr, client_addr;
+
+	// ⚠️ 关键修改 1：将客户端地址改为 sockaddr_in6 以支持 IPv6 和双栈
+	struct sockaddr_in6 server_addr, client_addr;
 	socklen_t client_len = sizeof(client_addr);
 	pthread_t recv_thread;
 	memset(iID, 0, sizeof(iID)); // 初始化数组
 	printf("========================================\n");
 	printf("统一接收端（设备创建 + 网络接收）\n");
 	printf("分辨率%dx%d\n", tinfo1.SCREEN_WIDTH, tinfo1.SCREEN_HEIGHT);
-
 	printf("========================================\n\n");
 
 	// 设置信号处理
@@ -470,8 +471,8 @@ int main(int argc, char **argv)
 	// 忽略 SIGPIPE 信号，防止客户端断开时程序闪退
 	signal(SIGPIPE, SIG_IGN);
 
-	// 2. 创建 socket 服务器
-	server_socket = socket(AF_INET, SOCK_STREAM, 0);
+	// ⚠️ 关键修改 2：协议族改为 AF_INET6
+	server_socket = socket(AF_INET6, SOCK_STREAM, 0);
 	if (server_socket < 0)
 	{
 		perror("创建 socket 失败");
@@ -482,11 +483,20 @@ int main(int argc, char **argv)
 	int opt = 1;
 	setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-	// 绑定地址
+	// ⚠️ 关键修改 3：关闭 IPV6_V6ONLY 选项（允许该 IPv6 Socket 接收 IPv4 连接）
+	int v6only = 0;
+	if (setsockopt(server_socket, IPPROTO_IPV6, IPV6_V6ONLY, &v6only, sizeof(v6only)) < 0)
+	{
+		perror("关闭 IPV6_V6ONLY 失败");
+		close(server_socket);
+		return 1;
+	}
+
+	// ⚠️ 关键修改 4：绑定地址结构体改为 IPv6 格式
 	memset(&server_addr, 0, sizeof(server_addr));
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_addr.s_addr = INADDR_ANY;
-	server_addr.sin_port = htons(PORT);
+	server_addr.sin6_family = AF_INET6;
+	server_addr.sin6_addr = in6addr_any; // 监听所有本地 IPv4 和 IPv6 地址
+	server_addr.sin6_port = htons(PORT);
 
 	if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 	{
@@ -503,7 +513,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("等待发送端连接，端口: %d...\n", PORT);
+	printf("等待发送端连接（支持 IPv4/IPv6 双栈），端口: %d...\n", PORT);
 
 	// 1. 创建虚拟设备
 	uinput_fd = create_virtual_device();
@@ -528,10 +538,23 @@ int main(int argc, char **argv)
 			running = 0;
 			break;
 		}
-		if (client_addr.sin_addr.s_addr == htonl(INADDR_LOOPBACK))
+		// ⚠️ 过滤回环地址逻辑（同时拦截 IPv4 和 IPv6 的本地回环）
+
+		// 情况 A：纯 IPv6 本地回环地址，即 "::1"
+		int is_v6_loopback = (IN6_IS_ADDR_LOOPBACK(&client_addr.sin6_addr));
+
+		// 情况 B：IPv4 映射到 IPv6 的本地回环地址，即 "::ffff:127.0.0.1"
+		int is_v4_mapped_loopback = (IN6_IS_ADDR_V4MAPPED(&client_addr.sin6_addr) &&
+									 client_addr.sin6_addr.s6_addr[12] == 127 &&
+									 client_addr.sin6_addr.s6_addr[13] == 0 &&
+									 client_addr.sin6_addr.s6_addr[14] == 0 &&
+									 client_addr.sin6_addr.s6_addr[15] == 1);
+
+		if (is_v6_loopback || is_v4_mapped_loopback)
 		{
+			printf("⚠️ 拦截到本地回环地址连接（IPv4/IPv6），已自动断开。\n");
 			close(client_fd);
-			continue; // 忽略本地回环地址的连接
+			continue;
 		}
 		if (write(client_fd, &tinfo1, sizeof(tinfo1)) != sizeof(tinfo1))
 		{
@@ -539,7 +562,10 @@ int main(int argc, char **argv)
 			close(client_fd);
 			continue; // 继续等待下一个客户端连接
 		}
-		printf("✓ 发送端: %s 已连接\n", inet_ntoa(client_addr.sin_addr));
+				// 打印连接信息（兼容 IPv4 和 IPv6 格式的打印）
+		char ip_str[INET6_ADDRSTRLEN];
+		inet_ntop(AF_INET6, &client_addr.sin6_addr, ip_str, sizeof(ip_str));
+		printf("✓ 发送端: %s 已连接\n", ip_str);
 		// 3. 创建接收线程
 		pthread_create(&recv_thread, NULL, receive_thread, &client_fd);
 	}

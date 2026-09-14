@@ -5,6 +5,7 @@
 #include <media/NdkMediaFormat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <android/log.h>
@@ -70,7 +71,7 @@ void *client_thread(void *arg)
     client_arr = clientfd;
     int server_fd = *(int *)arg;
     printf("启动客户端线程 %d\n", server_fd);
-    struct sockaddr_in address;
+    struct sockaddr_in6 address;
     int addrlen = sizeof(address);
     int client_fd = 0;
     int ret = 0;
@@ -86,11 +87,30 @@ void *client_thread(void *arg)
             printf("客户端连接失败\n");
             continue;
         }
-        if (address.sin_addr.s_addr == htonl(INADDR_LOOPBACK))
-        {
-            close(client_fd);
-            continue;
-        }
+		// ⚠️ 过滤回环地址逻辑（同时拦截 IPv4 和 IPv6 的本地回环）
+		
+		// 情况 A：纯 IPv6 本地回环地址，即 "::1"
+		int is_v6_loopback = (IN6_IS_ADDR_LOOPBACK(&address.sin6_addr));
+		
+		// 情况 B：IPv4 映射到 IPv6 的本地回环地址，即 "::ffff:127.0.0.1"
+		int is_v4_mapped_loopback = (IN6_IS_ADDR_V4MAPPED(&address.sin6_addr) && 
+									 address.sin6_addr.s6_addr[12] == 127 && 
+									 address.sin6_addr.s6_addr[13] == 0 && 
+									 address.sin6_addr.s6_addr[14] == 0 && 
+									 address.sin6_addr.s6_addr[15] == 1);
+
+		if (is_v6_loopback || is_v4_mapped_loopback)
+		{
+			printf("⚠️ 拦截到本地回环地址连接（IPv4/IPv6），已自动断开。\n");
+			close(client_fd);
+			continue;
+		}
+
+		// 打印连接信息（兼容 IPv4 和 IPv6 格式的打印）
+		char ip_str[INET6_ADDRSTRLEN];
+		inet_ntop(AF_INET6, &address.sin6_addr, ip_str, sizeof(ip_str));
+		printf("✓ 已连接到发送端: %s\n", ip_str);
+
         client_arr[client_count++] = client_fd;
         while (start_buf_size == 0)
         {
@@ -258,17 +278,26 @@ Java_com_my_scrcpy_binding_MyNativeBridge_setNativeServerAndEncoder(
     {
         printf("开始监听端口 %d\n", port);
         // 1. 创建、绑定、监听 TCP Socket (保持不变)
-        g_ctx.server_fd = socket(AF_INET, SOCK_STREAM, 0);
+        g_ctx.server_fd = socket(AF_INET6, SOCK_STREAM, 0);
         if (g_ctx.server_fd < 0)
             return 0;
         printf("开始线程 %d\n", g_ctx.server_fd);
         int opt = 1;
         setsockopt(g_ctx.server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-        struct sockaddr_in address;
-        address.sin_family = AF_INET;
-        address.sin_addr.s_addr = INADDR_ANY;
-        address.sin_port = htons(port);
+        	// ⚠️ 关键修改 3：关闭 IPV6_V6ONLY 选项（允许该 IPv6 Socket 接收 IPv4 连接）
+	int v6only = 0;
+	if (setsockopt(g_ctx.server_fd, IPPROTO_IPV6, IPV6_V6ONLY, &v6only, sizeof(v6only)) < 0)
+	{
+		perror("关闭 IPV6_V6ONLY 失败");
+		close(g_ctx.server_fd);
+		return 1;
+	}
+        struct sockaddr_in6 address;
+        memset(&address, 0, sizeof(address));
+        address.sin6_family = AF_INET6;
+        address.sin6_addr = in6addr_any;
+        address.sin6_port = htons(port);
 
         if (bind(g_ctx.server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
         {
