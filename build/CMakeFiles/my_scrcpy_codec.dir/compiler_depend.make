@@ -45,6 +45,7 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/android/ndk-version.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/android/rect.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/android/versioning.h \
+  /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/arpa/inet.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/asm-generic/bitsperlong.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/asm-generic/fcntl.h \
   /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/asm-generic/int-ll64.h \
@@ -185,6 +186,10 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android/asm/sve_context.h:
 
+/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/arpa/inet.h:
+
+/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/swab.h:
+
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/android/versioning.h:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android/asm/posix_types.h:
@@ -293,8 +298,6 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/18/include/stdint.h:
 
-/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/flock64.h:
-
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/strings.h:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/asm-generic/signal.h:
@@ -332,6 +335,8 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/lib/clang/18/include/stdbool.h:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/ip_mreq_source.h:
+
+/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/flock64.h:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/fortify/socket.h:
 
@@ -375,8 +380,6 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/linux/byteorder/little_endian.h:
 
-/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/swab.h:
-
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/sysconf.h:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/bits/wait.h:
@@ -392,6 +395,10 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__config_site:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/__verbose_abort:
+
+/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/malloc.h:
+
+/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/cstring:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/stdint.h:
 
@@ -454,7 +461,3 @@ CMakeFiles/my_scrcpy_codec.dir/MyNativeBridge.cpp.o: /home/wode/tmp/my_scrcpy_pr
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/linux/uio.h:
 
 /media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/linux/wait.h:
-
-/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/cstring:
-
-/media/wode/ec61acb7-033a-45dd-93e8-6a5ee077741d/ndk/android-ndk-r27-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/malloc.h:

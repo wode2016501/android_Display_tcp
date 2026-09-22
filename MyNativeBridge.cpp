@@ -349,7 +349,7 @@ Java_com_my_scrcpy_binding_MyNativeBridge_initNativeServerAndEncoder(
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_WIDTH, Width);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_HEIGHT, Height);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_BIT_RATE, bitrate);
-    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);
+    AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_FRAME_RATE, 60);// 60fps
     // max-fps
     //  AMediaFormat_setFloat(format, "max-fps-to-encoder", 60.0f);
     AMediaFormat_setInt32(format, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1);      // 关键：I 帧间隔为 1 秒

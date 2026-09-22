@@ -37,7 +37,7 @@ public class MyNativeBridge {
             throw new IOException("C 硬件编码器 InputSurface 创建失败！");
         }
 
-        System.out.println("C 层 Surface 创建成功，正在通过隐藏 API 绑定虚拟屏幕...");
+        System.out.println("C 层 Surface 创建成功，正在通过隐藏 API 绑定虚拟屏幕...%d",displayid);
 
         // 2. 绑定系统虚拟显示器到这个从 C++ 递过来的 mySurface 上
         try {
