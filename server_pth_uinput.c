@@ -457,7 +457,7 @@ void *receive_thread(void *arg)
 
 				if (tp.active == 0 && eventCount < sizeof(iID))
 				{
-					printf("按下id=%d ", tp.id);
+					//printf("按下id=%d ", tp.id);
 					if (id[tp.id] != 0)
 					{
 						fprintf(stderr, "id=%d 重复按下\n", id[tp.id]);
@@ -473,7 +473,7 @@ void *receive_thread(void *arg)
 						}
 					}
 					eventCount++;
-					printf("分配id=%d eventCount=%d\n", id[tp.id], eventCount);
+					//printf("分配id=%d eventCount=%d\n", id[tp.id], eventCount);
 				}
 				iid = id[tp.id];
 				if (tp.active == 1 && iid < 1)
@@ -483,7 +483,7 @@ void *receive_thread(void *arg)
 				}
 				if (tp.active == 2)
 				{
-					printf("释放id=%d,%d,%d\n", id[tp.id], id[tp.id] - 1, tp.id);
+					//printf("释放id=%d,%d,%d\n", id[tp.id], id[tp.id] - 1, tp.id);
 					if (id[tp.id] == 0)
 					{
 						fprintf(stderr, "id=%d 不存在\n", id[tp.id]);
@@ -508,15 +508,15 @@ void *receive_thread(void *arg)
 
 				if (new)
 				{
-					if (tp.active == 1)
-						printf("new\n");
+					//if (tp.active == 1)
+					//	printf("new\n");
 					send_touch_event(iid, tp.x, tp.y, tp.active);
 				}
 				// send_input_event_test(EV_SYN, SYN_REPORT, 0);
 				ret = send_syn_report_safe(sync_w);
 				if (ret == 1)
 				{
-					printf("zero newid\n");
+					//printf("zero newid\n");
 					memset(newid, 0, sizeof(newid));
 				}
 				pthread_mutex_unlock(&uinputMutex);
