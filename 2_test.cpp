@@ -335,14 +335,15 @@ int main(int argc, char **argv)
                 //  out_size = info.size;
                 if ((nalu_data[4] & 0x1f) == 5)
                 {
-                    if (no_client_fd){
-                        client_fd=no_client_fd;
+                    if (no_client_fd)
+                    {
+                        client_fd = no_client_fd;
                         no_client_fd = 0;
                     }
-                   // printf("是I帧 %#x\n",nalu_data[4]);
+                    // printf("是I帧 %#x\n",nalu_data[4]);
                     if (FD_ISSET(server_fd, &rd_set))
                     {
-                        printf("有新客户端连接\n");
+                       // printf("有新客户端连接\n");
                         client_fd = client_connect(server_fd);
                         if (client_fd < 0)
                         {
@@ -362,6 +363,8 @@ int main(int argc, char **argv)
                         {
                             client_max *= 2;
                             client_arr = (int *)realloc(client_arr, sizeof(int) * client_max);
+                            if (!client_arr)
+                                break;
                         }
                         printf("客户端连接成功 fd=%d count=%d\n", client_fd, client_count);
                     }
@@ -450,5 +453,12 @@ int main(int argc, char **argv)
     {
         close(client_arr[i]);
     }
+    if (codec)
+    {
+        AMediaCodec_stop(codec);
+        AMediaCodec_delete(codec);
+    }
+    if (window)
+        ANativeWindow_release(window);
     close(server_fd);
 }
