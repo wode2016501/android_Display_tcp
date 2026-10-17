@@ -21,7 +21,7 @@
 char iID[SLOT_MAX];
 int eventCount = 0;
 #define PORT 9000
-
+int zeroret = 0;
 typedef struct
 {
 	int SCREEN_WIDTH;
@@ -65,6 +65,7 @@ static int touchCount = 0;
 int client_count = 0;
 // static pthread_mutex_t touchMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t uinputMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t writeMutex = PTHREAD_MUTEX_INITIALIZER;
 
 // 延时
 struct idtime
@@ -80,9 +81,9 @@ int inject_event(int uinput_fd, input_event_test *ev)
 	{
 		return -1;
 	}
-	// pthread_mutex_lock(&uinputMutex);
+	pthread_mutex_lock(&writeMutex);
 	int ret = write(uinput_fd, ev, sizeof(struct input_event));
-	// pthread_mutex_unlock(&uinputMutex);
+	pthread_mutex_unlock(&writeMutex);
 	if (ret != sizeof(struct input_event))
 	{
 		perror("写入设备失败");
@@ -417,7 +418,7 @@ void *receive_thread(void *arg)
 	memset(newid, 0, sizeof(newid));
 	client_count++;
 	int sync_w = 1;
-	int ret = 0;
+
 	int new = 1;
 	while (running)
 	{
@@ -437,7 +438,14 @@ void *receive_thread(void *arg)
 				if (tp.id < 0)
 					continue;
 				if (newid[tp.id] == 1 && tp.active == 1)
-					new = 0;
+				{
+					while (zeroret == 0)
+					{
+						usleep(10000);
+						zeroret = send_syn_report_safe(0);
+						memset(newid, 0, sizeof(newid));
+					}
+				}
 				/*if (tp.id < 10)
 				{
 					clock_gettime(CLOCK_MONOTONIC, &now);
@@ -504,23 +512,21 @@ void *receive_thread(void *arg)
 				}
 
 				// printf("接收触摸事件: id=%d %d, x=%d, y=%d, action=%d,%lldms\n", tp.id, iid, tp.x, tp.y, tp.active, interval_us);
-				pthread_mutex_lock(&uinputMutex);
 
 				if (new)
 				{
-					if (tp.active == 1)
-						printf("new\n");
 					send_touch_event(iid, tp.x, tp.y, tp.active);
 				}
+				pthread_mutex_lock(&uinputMutex);
 				// send_input_event_test(EV_SYN, SYN_REPORT, 0);
-				ret = send_syn_report_safe(sync_w);
-				if (ret == 1)
+				zeroret = send_syn_report_safe(sync_w);
+				if (zeroret == 1)
 				{
 					printf("zero newid\n");
 					memset(newid, 0, sizeof(newid));
 				}
 				pthread_mutex_unlock(&uinputMutex);
-				if (tp.active == 1 && newid[tp.id] == 0 && ret == 0)
+				if (tp.active == 1 && newid[tp.id] == 0 && zeroret == 0)
 				{
 					newid[tp.id] = 1;
 				}
