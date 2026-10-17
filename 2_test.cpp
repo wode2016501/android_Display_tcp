@@ -82,7 +82,7 @@ extern "C" void native_unbind_display(void)
 }
 int sendd(int client_fd, char *buf, int ssize)
 {
-     //printf("sendd %d\n", ssize);
+    //  printf("sendd %d\n", ssize);
     int ret = 0;
     int size = 0;
     ret = ssize - size;
@@ -145,18 +145,27 @@ int main(int argc, char **argv)
     int client_count = 0;
     int bitrate = 8000000; // 8M
     int port = 9999;
+    if (argc > 1 && strstr(argv[1], "-h"))
+    {
+        printf("Usage: %s [port] [bitrate] [width] [height]\n", argv[0]);
+        return 0;
+    }
     if (argc > 1)
     {
         port = atoi(argv[1]);
+    }
+    if (argc > 2)
+    {
+        bitrate = atoi(argv[2]);
     }
     int *Width = (int *)buffer;
     *Width = 1920;
     int *Height = (int *)(buffer + 4);
     *Height = 1080;
-    if (argc > 3)
+    if (argc > 4)
     {
-        *Width = atoi(argv[2]);
-        *Height = atoi(argv[3]);
+        *Width = atoi(argv[3]);
+        *Height = atoi(argv[4]);
     }
     printf(" ==============%dX%d  port: %d bitrate: %d============ \n", *Width, *Height, port, bitrate);
     int *sps_size = (int *)(buffer + 8);
@@ -251,6 +260,7 @@ int main(int argc, char **argv)
         return -1;
     }
     int client_fd = 0;
+    int no_client_fd = 0;
     fd_set wd_set, rd_set;
     int maxfd = 0;
     ssize_t buf_idx = 0;
@@ -259,6 +269,7 @@ int main(int argc, char **argv)
     size_t outx = 0;
     int out_size; // 8bit
     int ret = 0;
+    *sps_size = 0;
     AMediaCodecBufferInfo info;
     while (runing)
     {
@@ -271,7 +282,7 @@ int main(int argc, char **argv)
             {
                 continue;
             }
-            out_size = *sps_size + 8;
+            out_size = 8; // 8bit
             ret = sendd(client_fd, buffer, out_size);
             if (ret != out_size)
             {
@@ -292,6 +303,7 @@ int main(int argc, char **argv)
             }
             client_arr[client_count++] = client_fd;
             printf("客户端连接成功 fd=%d count=%d\n", client_fd, client_count);
+            no_client_fd = client_fd;
             client_fd = 0;
         }
 
@@ -320,20 +332,24 @@ int main(int argc, char **argv)
                     break;
                 }
                 nalu_data = buf + info.offset;
-                out_size = info.size;
-
+                //  out_size = info.size;
                 if ((nalu_data[4] & 0x1f) == 5)
                 {
-                 //    printf("是I帧\n");
+                    if (no_client_fd){
+                        client_fd=no_client_fd;
+                        no_client_fd = 0;
+                    }
+                   // printf("是I帧 %#x\n",nalu_data[4]);
                     if (FD_ISSET(server_fd, &rd_set))
                     {
+                        printf("有新客户端连接\n");
                         client_fd = client_connect(server_fd);
                         if (client_fd < 0)
                         {
                             continue;
                         }
 
-                        out_size = /* *sps_size*/ + 8;
+                        out_size = 8;
                         ret = sendd(client_fd, buffer, out_size);
                         if (ret != out_size)
                         {
@@ -355,15 +371,17 @@ int main(int argc, char **argv)
 
                     if (FD_ISSET(client_arr[i], &wd_set))
                     {
+                        if (no_client_fd == client_arr[i])
+                            continue;
                         out_size = info.size;
                         if (client_fd == client_arr[i])
                         {
                             out_size += *sps_size;
                         }
-                        ret = sendd(client_arr[i], (char *)&out_size,  sizeof(int));
-                        if (ret !=  sizeof(int))
+                        ret = sendd(client_arr[i], (char *)&out_size, sizeof(int));
+                        if (ret != sizeof(int))
                         {
-                            fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败还有%d。\n", client_arr[i],client_count-1);
+                            fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败还有%d。\n", client_arr[i], client_count - 1);
                             close(client_arr[i]);
                             memcpy(client_arr + i, client_arr + i + 1, sizeof(int) * (client_count - i - 1));
                             client_count--;
@@ -374,21 +392,21 @@ int main(int argc, char **argv)
                         {
                             printf("发送SPS PPS\n");
                             ret = sendd(client_arr[i], sps_buf, *sps_size);
-                            if (ret !=*sps_size)
+                            if (ret != *sps_size)
                             {
-                                fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败还有%d。\n", client_arr[i],client_count-1);
+                                fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败还有%d。\n", client_arr[i], client_count - 1);
                                 close(client_arr[i]);
                                 memcpy(client_arr + i, client_arr + i + 1, sizeof(int) * (client_count - i - 1));
                                 client_count--;
                                 i--;
                                 continue;
                             }
-                            client_fd =0;
+                            client_fd = 0;
                         }
                         ret = sendd(client_arr[i], (char *)nalu_data, info.size);
                         if (ret != info.size)
                         {
-                            fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败还有%d。\n", client_arr[i],client_count-1);
+                            fprintf(stderr, "TCP %d 客户端似乎断开了连接，发送失败还有%d。\n", client_arr[i], client_count - 1);
                             close(client_arr[i]);
                             memcpy(client_arr + i, client_arr + i + 1, sizeof(int) * (client_count - i - 1));
                             client_count--;
