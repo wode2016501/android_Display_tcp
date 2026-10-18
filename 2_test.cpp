@@ -29,8 +29,10 @@ extern "C" int native_bind_display_to_surface(ANativeWindow *window, int width, 
 {
     using namespace android;
 
-    if (window == nullptr)
+    if (window == nullptr){
+        printf("window == nullptr\n");
         return -1;
+    }
 
     // 1. Android 9 创建虚拟显示器
     sp<IBinder> dpy = SurfaceComposerClient::createDisplay(String8("my_display"), false);
@@ -54,9 +56,8 @@ extern "C" int native_bind_display_to_surface(ANativeWindow *window, int width, 
     Rect layerStackRect(0, 0, width, height);
     Rect displayRect(0, 0, width, height);
 
-    t.setDisplayProjection(dpy, 0, layerStackRect, displayRect);
+    t.setDisplayProjection(dpy, static_cast<ui::Rotation>(0), layerStackRect, displayRect);
     t.setDisplayLayerStack(dpy, 0);
-
     // 4. 提交事务
     t.apply();
 
@@ -267,7 +268,7 @@ int main(int argc, char **argv)
     uint8_t *buf = 0;
     uint8_t *nalu_data = 0;
     size_t outx = 0;
-    int out_size; // 8bit
+    int out_size; // 4bit
     int ret = 0;
     *sps_size = 0;
     AMediaCodecBufferInfo info;
@@ -275,6 +276,7 @@ int main(int argc, char **argv)
     {
         if (client_count == 0)
         {
+           
             if (g_dpy != nullptr)
                 native_unbind_display();
             client_fd = client_connect(server_fd);
@@ -306,7 +308,6 @@ int main(int argc, char **argv)
             no_client_fd = client_fd;
             client_fd = 0;
         }
-
         buf_idx = AMediaCodec_dequeueOutputBuffer(codec, &info, 20000);
         if (buf_idx >= 0)
         {
